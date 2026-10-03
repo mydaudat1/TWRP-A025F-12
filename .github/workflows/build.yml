@@ -1,0 +1,88 @@
+name: Build TWRP a02q
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Tạo GitHub Release kèm recovery.img/recovery.tar"
+        type: boolean
+        default: false
+
+concurrency:
+  group: build-twrp
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # chỉ dùng khi tạo Release
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04      # repo PUBLIC: 4 vCPU/16GB. Repo private chỉ 2 vCPU/8GB -> rất chậm, dễ hết RAM.
+    timeout-minutes: 350       # giới hạn tối đa của một job là 360 phút
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Giải phóng dung lượng đĩa
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+                      /usr/local/share/boost /opt/hostedtoolcache/CodeQL /usr/share/swift
+          sudo docker image prune --all --force >/dev/null 2>&1 || true
+          df -h /
+
+      - name: Cảnh báo nếu thiếu blob FBE
+        run: |
+          if [ ! -f samsung/a02q/recovery/root/system/bin/qseecomd ]; then
+            echo "::warning title=Thiếu blob FBE::Chưa có qseecomd/keymaster trong recovery/root. Bản build sẽ KHÔNG giải mã được /data. Chạy samsung/a02q/tools/collect_fbe_blobs.py rồi commit kết quả."
+          fi
+
+      - name: Cài gói build
+        run: bash scripts/setup-deps.sh
+
+      - name: Khôi phục ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.ccache
+          key: ccache-a02q-${{ github.run_id }}
+          restore-keys: ccache-a02q-
+
+      - name: Build TWRP
+        env:
+          CCACHE_MAX: 4G
+        run: ./build-twrp.sh
+
+      - name: Lưu ccache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.ccache
+          key: ccache-a02q-${{ github.run_id }}
+
+      - name: Upload kết quả
+        uses: actions/upload-artifact@v4
+        with:
+          name: twrp-a02q
+          path: |
+            out/recovery.img
+            out/recovery.tar
+          if-no-files-found: error
+
+      - name: Upload log khi lỗi
+        if: failure()
+        run: tail -n 300 ~/build.log > build-tail.log || true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: build-log
+          path: build-tail.log
+          if-no-files-found: ignore
+
+      - name: Tạo Release
+        if: inputs.release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: a02q-${{ github.run_number }}
+          name: TWRP a02q #${{ github.run_number }}
+          files: |
+            out/recovery.img
+            out/recovery.tar

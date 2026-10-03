@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build TWRP 12.1 cho SM-A025F (a02q). Chạy lại được nhiều lần: sync/build tiếp tục từ chỗ dừng.
-# Dùng:  tmux new -s build && ./build-twrp.sh        (tmux giữ build sống khi mất kết nối)
+# Chạy trên GitHub Actions (xem .github/workflows/build.yml) hoặc local: ./scripts/setup-deps.sh && ./build-twrp.sh
 set -eo pipefail
 export PATH="$HOME/.bin:$PATH"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -43,7 +43,7 @@ fi
 # --- 4) build ---
 export ALLOW_MISSING_DEPENDENCIES=true LC_ALL=C
 export USE_CCACHE=1 CCACHE_EXEC="$(command -v ccache)" CCACHE_DIR="$HOME/.ccache"
-ccache -M 20G >/dev/null
+ccache -M "${CCACHE_MAX:-20G}" >/dev/null
 set +u
 source build/envsetup.sh
 lunch "$TARGET"

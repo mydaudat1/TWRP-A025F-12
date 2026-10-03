@@ -1,5 +1,5 @@
 #!/bin/bash
-# Chạy tự động khi Ona tạo môi trường (postCreateCommand). Có thể chạy lại an toàn.
+# Cài gói cần thiết để build TWRP (Ubuntu 22.04). Chạy lại an toàn.
 set -e
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -16,4 +16,4 @@ grep -q '.bin' "$HOME/.bashrc" || echo 'export PATH="$HOME/.bin:$PATH"' >> "$HOM
 git config --global user.name  >/dev/null 2>&1 || git config --global user.name  "twrp-builder"
 git config --global user.email >/dev/null 2>&1 || git config --global user.email "builder@localhost"
 git config --global color.ui false
-echo "Setup xong. Chạy:  tmux new -s build  rồi  ./build-twrp.sh"
+echo "Setup xong.
