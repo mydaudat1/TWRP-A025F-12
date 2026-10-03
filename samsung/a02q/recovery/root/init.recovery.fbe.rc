@@ -1,0 +1,12 @@
+# Placeholder -- chạy tools/collect_fbe_blobs.py để ghi đè bằng file thật
+service qseecomd /system/bin/qseecomd
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+on fs
+    chmod 0755 /system/bin/qseecomd
+
+on boot
+    start qseecomd

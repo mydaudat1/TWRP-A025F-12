@@ -1,0 +1,5 @@
+{
+  "name": "twrp-a02q-builder",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "postCreateCommand": "bash .devcontainer/setup.sh"
+}
