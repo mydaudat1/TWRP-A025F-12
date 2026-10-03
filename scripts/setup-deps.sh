@@ -16,4 +16,4 @@ grep -q '.bin' "$HOME/.bashrc" || echo 'export PATH="$HOME/.bin:$PATH"' >> "$HOM
 git config --global user.name  >/dev/null 2>&1 || git config --global user.name  "twrp-builder"
 git config --global user.email >/dev/null 2>&1 || git config --global user.email "builder@localhost"
 git config --global color.ui false
-echo "Setup xong.
+echo "Setup xong."
